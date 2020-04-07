@@ -1,8 +1,3 @@
-repositories {
-    mavenCentral()
-    google()
-    jcenter()
-}
 plugins {
     `kotlin-dsl`
     groovy
@@ -24,3 +19,5 @@ publishing {
 }
 group = "com.devnan.plugin"
 version = "1.0.0"
+
+apply {from("../plugin-publish.gradle")}

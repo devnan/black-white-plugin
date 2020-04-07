@@ -3,10 +3,12 @@ package com.devnan.plugin
 import TimeReporter
 import com.android.build.api.transform.*
 import com.android.build.gradle.internal.pipeline.TransformManager
+import org.gradle.api.GradleException
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.ClassWriter
 import java.io.File
 import java.io.FileOutputStream
+
 
 class BlackWhiteTransform : Transform() {
 
@@ -47,21 +49,29 @@ class BlackWhiteTransform : Transform() {
             val dirPath: String = directoryInput.file.absolutePath
             directoryInput.file.walkTopDown().forEach { file ->
                 if (file.isFile && file.name.endsWith(".class")) {
-                    val classReader = ClassReader(file.readBytes())
-                    val classWriter = ClassWriter(classReader, ClassWriter.COMPUTE_MAXS)
-                    val classVisitor = BlackWhiteClassVisitor(classWriter)
-                    classReader.accept(classVisitor, ClassReader.EXPAND_FRAMES)
-                    val data = classWriter.toByteArray()
-                    val fout = FileOutputStream(file)
-                    fout.write(data)
-                    fout.close()
 
-                    val dest = File(
-                        directoryInput.getOutputFile(transformInvocation, Format.DIRECTORY),
-                        file.absolutePath.substring(dirPath.length)
-                    )
-                    dest.parentFile.mkdirs()
-                    file.copyTo(dest)
+                    try {
+                        val classReader = ClassReader(file.readBytes())
+                        val classWriter = ClassWriter(classReader, ClassWriter.COMPUTE_MAXS)
+                        val classVisitor = BlackWhiteClassVisitor(classWriter)
+                        classReader.accept(classVisitor, ClassReader.EXPAND_FRAMES)
+                        val data = classWriter.toByteArray()
+                        val fout = FileOutputStream(file)
+                        fout.write(data)
+                        fout.close()
+                        val dest = File(
+                            directoryInput.getOutputFile(transformInvocation, Format.DIRECTORY),
+                            file.absolutePath.substring(dirPath.length)
+                        )
+                        dest.parentFile.mkdirs()
+                        file.copyTo(dest)
+                    } catch (e: Exception) {
+                        // print stackTrace
+                        for (i in e.stackTrace.indices) {
+                            println(e.stackTrace[i].toString())
+                        }
+                        throw GradleException("black-white-plugin exception: " + e.message)
+                    }
                 }
             }
         }
@@ -77,12 +87,20 @@ class BlackWhiteTransform : Transform() {
             val dirPath: String = jarInput.file.absolutePath
             jarInput.file.walkTopDown().forEach { file ->
                 if (file.isFile && file.name.endsWith(".jar")) {
-                    val dest = File(
-                        jarInput.getOutputFile(transformInvocation, Format.JAR),
-                        file.absolutePath.substring(dirPath.length)
-                    )
-                    dest.parentFile.mkdirs()
-                    file.copyTo(dest)
+                    try {
+                        val dest = File(
+                            jarInput.getOutputFile(transformInvocation, Format.JAR),
+                            file.absolutePath.substring(dirPath.length)
+                        )
+                        dest.parentFile.mkdirs()
+                        file.copyTo(dest)
+                    } catch (e: Exception) {
+                        // print stackTrace
+                        for (i in e.stackTrace.indices) {
+                            println(e.stackTrace[i].toString())
+                        }
+                        throw GradleException("black-white-plugin exception: " + e.message)
+                    }
                 }
             }
         }

@@ -6,7 +6,7 @@ import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Opcodes.*
 
 
-class BlackWhiteClassVisitor(cv: ClassVisitor?) : ClassVisitor(Opcodes.ASM8, cv), Opcodes {
+class BlackWhiteClassVisitor(cv: ClassVisitor?) : ClassVisitor(Opcodes.ASM5, cv), Opcodes {
 
     private var className: String? = null
     private var superClassName: String? = null
